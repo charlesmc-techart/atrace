@@ -2,9 +2,9 @@ import maya.cmds as cmds
 
 """Connect a referenced rig's geometry to the master layout's shader network
 
-Some 3D models already present in the master layout. So instead of having the
-rigs have their own separate shader networks, connect the rig's geometry to the
-its corresponding network.
+Some rigs were developed after models in the master layout were already imported,
+so instead of having the rigs have their own shader networks, connect to the
+model's in the master layout instead.
 """
 
 REFERENCED_RIG_GEO = "::"
