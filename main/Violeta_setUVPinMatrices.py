@@ -1,7 +1,11 @@
+from functools import partial
+
 import maya.cmds as cmds
 
+"""Set up UV Pin Matrix nodes for Violeta's face rig"""
 
-def setUVPinMatrix():
+
+def main() -> None:
     cmds.undoInfo(openChunk=True)
 
     # Get all locators under `face_controls_grp`
@@ -30,13 +34,14 @@ def setUVPinMatrix():
         # Connect pickMatrix
         cmds.parent(f"{locatorName}|{group}", world=True)
 
-        cmds.connectAttr(
-            f"{pinName}.outputMatrix[0]", f"{pickMatrixName}.inputMatrix", force=True
+        connectAttrCmd = partial(cmds.connectAttr, force=True)
+        connectAttrCmd(
+            f"{pinName}.outputMatrix[0]",
+            f"{pickMatrixName}.inputMatrix",
         )
-        cmds.connectAttr(
+        connectAttrCmd(
             f"{pickMatrixName}.outputMatrix",
             f"{locatorName}.offsetParentMatrix",
-            force=True,
         )
 
         cmds.parent(f"|{group}", locatorName)
@@ -47,4 +52,5 @@ def setUVPinMatrix():
     cmds.undoInfo(closeChunk=True)
 
 
-setUVPinMatrix()
+if __name__ == "__main__":
+    main()

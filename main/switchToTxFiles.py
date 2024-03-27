@@ -1,7 +1,9 @@
 import maya.cmds as cmds
 
+"""Use Arnold's TX files as textures instead of PNGs"""
 
-def main():
+
+def main() -> None:
     for network in cmds.ls("::*_shaderNetwork", type="container"):
         try:
             texture = cmds.getAttr(f"{network}.texture")

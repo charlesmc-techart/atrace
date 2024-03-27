@@ -1,8 +1,10 @@
 import maya.cmds as cmds
 
+"""Contain Violeta's shader network in a Maya Asset"""
 
-def main():
-    def addAttr(node, name, type_, niceName=None):
+
+def main() -> None:
+    def addAttr(node: str, name: str, type_: str, niceName: str = None):
         kwargs = {"longName": name, "attributeType": type_}
         if niceName:
             kwargs["niceName"] = niceName
@@ -16,11 +18,9 @@ def main():
             f"Violeta_{source}", f"Violeta_{destination}", force=True
         )
 
-    sg = [
-        sg
-        for sg in cmds.ls("*sg", type="shadingEngine")
-        if cmds.listConnections(sg, type="mesh")
-    ][0]
+    materials = cmds.ls("*sg", type="shadingEngine")
+    sg = [m for m in materials if cmds.listConnections(m, type="mesh")][0]
+
     addAttr(sg, name="model", type_="message")
     sg = cmds.rename(sg, "Violeta_body_sg")
 
@@ -76,5 +76,5 @@ def main():
     cmds.delete("connectShaderNetwork_script", cmds.ls("*sceneConfiguration*"))
 
 
-main()
-del main
+if __name__ == "__main__":
+    main()

@@ -1,10 +1,18 @@
 import maya.cmds as cmds
 
-coinModel = "::Coin_geo"
-if cmds.referenceQuery(coinModel, isNodeReferenced=True):
+"""Connect a referenced rig's geometry to the master layout's shader network
+
+Some 3D models already present in the master layout. So instead of having the
+rigs have their own separate shader networks, connect the rig's geometry to the
+its corresponding network.
+"""
+
+REFERENCED_RIG_GEO = "::"
+MASTER_ASSET_NAME = "::"
+
+if cmds.referenceQuery(REFERENCED_RIG_GEO, isNodeReferenced=True):
 
     def connectToMasterShaders():
-        coinNetwork = "::Coin_"
         for source, destination in {
             "container": "shaderNetwork",
             "shadingEngine": "sg",
@@ -15,20 +23,20 @@ if cmds.referenceQuery(coinModel, isNodeReferenced=True):
         }.items():
             try:
                 cmds.connectAttr(
-                    f"{coinModel}.{source}",
-                    f"{coinNetwork}{destination}.model",
+                    f"{REFERENCED_RIG_GEO}.{source}",
+                    f"{MASTER_ASSET_NAME}{destination}.model",
                     force=True,
                 )
             except RuntimeError:
-                pass
+                continue
 
-        cmds.select(coinModel, replace=True)
+        cmds.select(REFERENCED_RIG_GEO, replace=True)
         try:
-            cmds.hyperShade(assign=f"{coinNetwork}sg")
+            cmds.hyperShade(assign=f"{MASTER_ASSET_NAME}sg")
         except:
             pass
         cmds.select(clear=True)
 
     connectToMasterShaders()
 
-del coinModel
+del REFERENCED_RIG_GEO, MASTER_ASSET_NAME

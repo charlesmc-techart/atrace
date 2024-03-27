@@ -1,26 +1,34 @@
+from functools import partial
+from itertools import count
+
 import maya.cmds as cmds
+import mtoa
+
+"""Set the necessary render settings when the file is opened"""
 
 
 def setRenderSettings() -> None:
-    """Sets the necessary render settings when the file is opened."""
     cmds.loadPlugin("mtoa", quiet=True)
 
     for network in cmds.ls("::*_shaderNetwork", type="container"):
         try:
             texture = cmds.getAttr(f"{network}.texture")
         except ValueError:
-            pass
+            continue
         else:
-            if texture:
-                filename = texture.rsplit("/", 1)[-1]
-                cmds.setAttr(
-                    f"{network}.texture",
-                    f"sourceimages/{filename}",
-                    type="string",
-                )
+            if not texture:
+                continue
+
+            filename = texture.rsplit("/", 1)[-1]
+            cmds.setAttr(
+                f"{network}.texture",
+                f"sourceimages/{filename}",
+                type="string",
+            )
 
     default = "defaultRenderGlobals"
-    cmds.setAttr(f"{default}.currentRenderer", "arnold", type="string")
+    setStrAttr = partial(cmds.setAttr, type="string")
+    setStrAttr(f"{default}.currentRenderer", "arnold")
 
     prefix = cmds.getAttr(f"{default}.imageFilePrefix")
     if (not prefix) or len(prefix) <= 3 or (not prefix.startswith("ACT")):
@@ -29,9 +37,7 @@ def setRenderSettings() -> None:
             start = filename.index("ACT")
             act = filename[start:][3]
             shot = filename[start:][5:7]
-            cmds.setAttr(
-                f"{default}.imageFilePrefix", f"ACT{act}-{shot}", type="string"
-            )
+            setStrAttr(f"{default}.imageFilePrefix", f"ACT{act}-{shot}")
 
     for attribute, value in {
         "animation": True,
@@ -44,16 +50,16 @@ def setRenderSettings() -> None:
     for camera in cmds.ls(cameras=True):
         if camera.startswith("ACT"):
             cmds.setAttr(f"{camera}.renderable", True)
-            for attribute in ("mask", "depth"):
-                cmds.setAttr(f"{camera}.{attribute}", True)
+            cmds.setAttr(f"{camera}.mask", True)
+            cmds.setAttr(f"{camera}.depth", True)
         else:
             cmds.setAttr(f"{camera}.renderable", False)
 
-    for attribute, value in {"width": 1920, "height": 1080}.items():
-        cmds.setAttr(f"defaultResolution.{attribute}", value)
+    cmds.setAttr(f"defaultResolution.width", 1920)
+    cmds.setAttr(f"defaultResolution.height", 1080)
 
     arnold = "defaultArnold"
-    cmds.setAttr(f"{arnold}Driver.aiTranslator", "exr", type="string")
+    setStrAttr(f"{arnold}Driver.aiTranslator", "exr")
 
     for attribute, value in {
         "exrCompression": 4,
@@ -91,25 +97,20 @@ def setRenderSettings() -> None:
 
     directory = cmds.internalVar(userTmpDir=True)
     try:
-        cmds.setAttr(
-            f"{arnold}RenderOptions.textureAutoTxPath", directory, type="string"
-        )
+        setStrAttr(f"{arnold}RenderOptions.textureAutoTxPath", directory)
     except RuntimeError:
         pass
 
-    cmds.setAttr(f"{arnold}Filter.aiTranslator", "contour", type="string")
+    setStrAttr(f"{arnold}Filter.aiTranslator", "contour")
 
-    for n in range(1, 5):
+    outlinerEditorCmd = partial(cmds.outlinerEditor, edit=True)
+    for n in count(start=1):
         try:
-            cmds.outlinerEditor(
-                f"outlinerPanel{n}", edit=True, showContainedOnly=True
-            )
+            outlinerEditorCmd(f"outlinerPanel{n}", showContainedOnly=True)
         except RuntimeError:
             break
         else:
-            cmds.outlinerEditor(
-                f"outlinerPanel{n}", edit=True, showNamespace=False
-            )
+            outlinerEditorCmd(f"outlinerPanel{n}", showNamespace=False)
 
     # Create AOVs when the file is referenced into a scene
     if cmds.referenceQuery("::setRenderSettings_script", isNodeReferenced=True):
@@ -125,33 +126,35 @@ def setRenderSettings() -> None:
             "Z",
             "ID",
         )
+
+        def isZOrId(aov: str) -> bool:
+            return aov == "Z" or aov == "ID"
+
+        connectAttrCmd = partial(cmds.connectAttr, force=True)
         for aov in aovs:
             name = f"aiAOV_{aov}"
             if not (
                 cmds.objExists(name) and cmds.objectType(name, isType="aiAOV")
             ):
-                if aov in aovs[:5]:
-                    aovint.addAOV(aov, aovType="rgba")
-                else:
+                if isZOrId(aov):
                     aovint.addAOV(aov)
+                else:
+                    aovint.addAOV(aov, aovType="rgba")
 
-            if aov == "Z" or aov == "ID":
-                cmds.connectAttr(
+            if isZOrId(aov):
+                connectAttrCmd(
                     f"::closest_filter.message",
                     f"{name}.outputs[0].filter",
-                    force=True,
                 )
-            elif aov != "outline":
-                cmds.connectAttr(
-                    f"::box_filter.message",
-                    f"{name}.outputs[0].filter",
-                    force=True,
-                )
-            else:
-                cmds.connectAttr(
+            elif aov == "outline":
+                connectAttrCmd(
                     f"{arnold}Filter.message",
                     f"{name}.outputs[0].filter",
-                    force=True,
+                )
+            else:
+                connectAttrCmd(
+                    f"::box_filter.message",
+                    f"{name}.outputs[0].filter",
                 )
         else:
             cmds.delete(cmds.ls("aiAOVFilter*", type="aiAOVFilter"))
