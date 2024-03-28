@@ -1,6 +1,6 @@
-import maya.cmds as cmds
-
 """Rename the shaders in the network to match the geometry's"""
+
+import maya.cmds as cmds
 
 
 def main():
@@ -19,7 +19,7 @@ def main():
     for n in networks:
         model = cmds.listConnections(f"{n}.model")[0]
         oldName = n.rsplit("_shaderNetwork", 1)[0]
-        newName = model.replace("_grp", "").replace("_geo", "")
+        newName = model.removesuffix("_grp").removesuffix("_geo")
 
         shaders = (
             s

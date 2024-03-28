@@ -1,8 +1,8 @@
+"""Set up UV Pin Matrix nodes for Violeta's face rig"""
+
 from functools import partial
 
 import maya.cmds as cmds
-
-"""Set up UV Pin Matrix nodes for Violeta's face rig"""
 
 
 def main() -> None:
@@ -28,16 +28,16 @@ def main() -> None:
 
         # Create pickMatrix
         pickMatrix = cmds.createNode("pickMatrix", name=pickMatrixName)
-        for attribute in "useRotate", "useScale", "useShear":
-            cmds.setAttr(f"{pickMatrix}.{attribute}", False)
+        cmds.setAttr(f"{pickMatrix}.useRotate", False)
+        cmds.setAttr(f"{pickMatrix}.useScale", False)
+        cmds.setAttr(f"{pickMatrix}.useShear", False)
 
         # Connect pickMatrix
         cmds.parent(f"{locatorName}|{group}", world=True)
 
         connectAttrCmd = partial(cmds.connectAttr, force=True)
         connectAttrCmd(
-            f"{pinName}.outputMatrix[0]",
-            f"{pickMatrixName}.inputMatrix",
+            f"{pinName}.outputMatrix[0]", f"{pickMatrixName}.inputMatrix"
         )
         connectAttrCmd(
             f"{pickMatrixName}.outputMatrix",

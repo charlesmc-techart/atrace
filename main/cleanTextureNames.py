@@ -1,8 +1,8 @@
+"""Remove the ' (1)' in certain filenames when Google Drive errors during sync"""
+
 from pathlib import Path
 
 import maya.cmds as cmds
-
-"""Remove the ' (1)' in certain filenames when Google Drive errors during sync"""
 
 
 def main():

@@ -1,33 +1,29 @@
+"""Set the necessary render settings when the file is opened"""
+
 from functools import partial
 from itertools import count
 
 import maya.cmds as cmds
-import mtoa
 
-"""Set the necessary render settings when the file is opened"""
+cmds.loadPlugin("mtoa", quiet=True)
+import mtoa
 
 
 def setRenderSettings() -> None:
-    cmds.loadPlugin("mtoa", quiet=True)
+    setStrAttr = partial(cmds.setAttr, type="string")
 
     for network in cmds.ls("::*_shaderNetwork", type="container"):
         try:
             texture = cmds.getAttr(f"{network}.texture")
         except ValueError:
             continue
-        else:
-            if not texture:
-                continue
+        if not texture:
+            continue
 
-            filename = texture.rsplit("/", 1)[-1]
-            cmds.setAttr(
-                f"{network}.texture",
-                f"sourceimages/{filename}",
-                type="string",
-            )
+        filename = texture.rsplit("/", 1)[-1]
+        setStrAttr(f"{network}.texture", f"sourceimages/{filename}")
 
     default = "defaultRenderGlobals"
-    setStrAttr = partial(cmds.setAttr, type="string")
     setStrAttr(f"{default}.currentRenderer", "arnold")
 
     prefix = cmds.getAttr(f"{default}.imageFilePrefix")
@@ -55,8 +51,8 @@ def setRenderSettings() -> None:
         else:
             cmds.setAttr(f"{camera}.renderable", False)
 
-    cmds.setAttr(f"defaultResolution.width", 1920)
-    cmds.setAttr(f"defaultResolution.height", 1080)
+    cmds.setAttr("defaultResolution.width", 1920)
+    cmds.setAttr("defaultResolution.height", 1080)
 
     arnold = "defaultArnold"
     setStrAttr(f"{arnold}Driver.aiTranslator", "exr")
@@ -143,7 +139,7 @@ def setRenderSettings() -> None:
 
             if isZOrId(aov):
                 connectAttrCmd(
-                    f"::closest_filter.message",
+                    "::closest_filter.message",
                     f"{name}.outputs[0].filter",
                 )
             elif aov == "outline":
@@ -153,7 +149,7 @@ def setRenderSettings() -> None:
                 )
             else:
                 connectAttrCmd(
-                    f"::box_filter.message",
+                    "::box_filter.message",
                     f"{name}.outputs[0].filter",
                 )
         else:

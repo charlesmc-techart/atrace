@@ -1,10 +1,14 @@
-import maya.cmds as cmds
-
 """Contain Violeta's shader network in a Maya Asset"""
+
+from typing import Optional
+
+import maya.cmds as cmds
 
 
 def main() -> None:
-    def addAttr(node: str, name: str, type_: str, niceName: str = None):
+    def addAttr(
+        node: str, name: str, type_: str, niceName: Optional[str] = None
+    ):
         kwargs = {"longName": name, "attributeType": type_}
         if niceName:
             kwargs["niceName"] = niceName

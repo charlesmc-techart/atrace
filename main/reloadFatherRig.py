@@ -1,6 +1,6 @@
-import maya.cmds as cmds
-
 """Reload The Father rig when the IK leg bugs out"""
+
+import maya.cmds as cmds
 
 
 def main():

@@ -1,8 +1,8 @@
+"""Replace the 100+ placeholder coin models with the finalized model"""
+
 from functools import partial
 
 import maya.cmds as cmds
-
-"""Replace the 100+ placeholder coin models with the finalized model"""
 
 
 def main() -> None:
