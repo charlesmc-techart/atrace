@@ -12,7 +12,7 @@ MASTER_ASSET_NAME = "::"
 
 if cmds.referenceQuery(REFERENCED_RIG_GEO, isNodeReferenced=True):
 
-    def connectToMasterShaders():
+    def connectToMasterShaders() -> None:
         for source, destination in {
             "container": "shaderNetwork",
             "shadingEngine": "sg",

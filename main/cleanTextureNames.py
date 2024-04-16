@@ -5,7 +5,7 @@ from pathlib import Path
 import maya.cmds as cmds
 
 
-def main():
+def main() -> None:
     toRemove = " (1)"
 
     texture = cmds.getAttr("::PokemonPlush_shaderNetwork.texture")

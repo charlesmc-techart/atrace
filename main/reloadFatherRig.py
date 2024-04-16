@@ -3,7 +3,7 @@
 import maya.cmds as cmds
 
 
-def main():
+def main() -> None:
     referenceNode = cmds.ls("father*", type="reference")[0]
     filePath = cmds.referenceQuery(referenceNode, filename=True)
     cmds.file(filePath, unloadReference=True)

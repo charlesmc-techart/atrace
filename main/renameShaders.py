@@ -3,7 +3,7 @@
 import maya.cmds as cmds
 
 
-def main():
+def main() -> None:
     suffixes = (
         "shaderNetwork",
         "sg",
